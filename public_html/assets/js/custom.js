@@ -35,7 +35,10 @@ var GameState = {
         this.load.image('stair', 'assets/images/tile_45.png');
         this.load.image('star', 'assets/images/star.png');
         this.load.image('diamond', 'assets/images/diamond.png');
-        this.load.spritesheet('fire', 'assets/images/fire.gif', 36 ,93 ,9);
+        this.load.spritesheet('fire', 'assets/images/fire.gif', 36 ,61 ,9);
+        this.load.spritesheet('monster', 'assets/images/monster.png', 139.6 ,145 ,8);
+        this.load.spritesheet('fireBall', 'assets/images/fireBalls.png', 512 ,173 ,6);
+//        this.load.image('fireBall', 'assets/images/firstaid.png');
 
         this.load.spritesheet('player', 'assets/images/boy_walk.png', 95.16666666666667, 158.75, 48);
         this.load.image('rope', 'assets/images/rope.gif');
@@ -164,8 +167,10 @@ var GameState = {
         this.gr13.setAll('body.allowGravity', false);
         
         var fireData = [
-            {'x': game.world.width - 500, 'y': game.world.height - 624},
-            {'x': game.world.width - 770, 'y': game.world.height - 524}
+            {'x': game.world.width - 500, 'y': game.world.height - 561},
+            {'x': game.world.width - 770, 'y': game.world.height - 461},
+            {'x': game.world.width - 70, 'y': game.world.height - 661},
+            {'x': game.world.width - 250, 'y': game.world.height - 1061}
         ];
         var fire;
         this.fires = this.add.group();
@@ -198,8 +203,6 @@ var GameState = {
         this.stair.setAll('body.immovable', true);
         this.stair.setAll('body.allowGravity', false);
         
-        
-        this.rope.enableBody = true;
 //        this.player = this.game.add.sprite(0, game.world.height - 222, 'dude');
 //        this.player.customParams = {Score: 30, Life: 100};
 //       dog1 = game.add.sprite(790, 250, 'baddie');
@@ -237,11 +240,33 @@ var GameState = {
         game.physics.arcade.collide(this.player, this.groundSideL);
         game.physics.arcade.collide(this.player, this.gr15);
         game.physics.arcade.collide(this.player, this.gr13);
+        
+        game.physics.arcade.collide(this.fireBalls, this.grounds);
+        game.physics.arcade.collide(this.fireBalls, this.groundSideR);
+        game.physics.arcade.collide(this.fireBalls, this.groundSideL);
+        game.physics.arcade.collide(this.fireBalls, this.gr15);
+        game.physics.arcade.collide(this.fireBalls, this.gr13);
+        
         game.physics.arcade.overlap(this.player, this.stair, function (player, stair) {
                     this.uiBlocked = false;
         }, null, this);
         game.physics.arcade.overlap(this.player, this.rope, function (player, rope) {
                     this.uiBlocked = false;
+        this.rope.enableBody = true;
+        
+        this.monster = this.add.sprite(game.world.width - 20, this.game.world.height - 1395, 'monster');
+        this.game.physics.arcade.enable(this.monster);
+        this.monster.animations.add('move', [0, 1, 2, 3, 4, 5, 6, 7], 4, true);
+        this.monster.scale.setTo(-1, 1);
+         this.monster.play('move');
+         this.monster.body.allowGravity = false;
+         
+         this.fireBallFrquency = 7;
+         this.fireBallSpeed = 150;
+         this.fireBalls = this.add.group();
+         this.fireBalls.enableBody = true;
+         this.createFireBall();
+         this.barrelCreator = this.game.time.events.loop(Phaser.Timer.SECOND * this.fireBallFrquency, this.createFireBall, this);
         }, null, this);
         
         
@@ -342,18 +367,6 @@ var GameState = {
 //        };
 //    if(this.player.body.velocity.x<= game.world.width - 200 && ((game.world.height - 180) + (game.world.height - 600))){
 //            }
-
-/////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-    }
 };
 //////////////650
 var game = new Phaser.Game(1000, 650, Phaser.AUTO);
@@ -366,3 +379,10 @@ game.state.start('GameState');
 //this.sheep.angle += 0.5
 
 //openclipart.org , kenney.nl ,
+        }, null, this);
+         game.physics.arcade.overlap(this.player, this.fires, this.killPlayer , null, this);
+         game.physics.arcade.overlap(this.player, this.fireBalls, this.killPlayer , null, this);
+         
+        game.physics.arcade.overlap(this.player, this.monster, function (player, monster) {
+                   alert('Congratulations you win !!!');
+                   game.state.start('GameState');
