@@ -333,47 +333,12 @@ var GameState = {
 ////            }, this);
 ////            dogMovement.start();
 //        //////////////////////
-//        
-        
-//
-////
-////        dog1.body.velocity.x = -150 * direction1;
-////        if (dog1.x <= 0) {
-////            direction1 = -1;
-////            dog1.animations.play('right');
-////        }
-////        ;
-////        if (dog1.x >= game.world.width - 32) {
-////            direction1 = 1;
-////            dog1.animations.play('left');
-////        }
-//
-//        function playerKilled(player, dog) {
-//            player.kill();
-//        } ;
-//
+//       
 //    },
         this.isClaimbing = false;
         this.isComingDown = false;
         this.player.body.gravity.y = 0;
-
-//            if(this.player.body.velocity.x<= game.world.width - 200 && ((game.world.height - 180) + (game.world.height - 600))){
-//            player.body.velocity.y = 0;
-//            console.log('up or down')
-//            if (!this.isClimbing && Math.abs(player.x - stair.x) < 10 && this.cursors.down.isDown) {
-//            this.isClimbing = true;
-//            player.body.velocity.y = +150;
-//            player.animations.play('bottom');
-//        }
-//        else if (!this.isComingDown && Math.abs(player.x - stair.x) < 10 && this.cursors.up.isDown) {
-//            this.isComingDown = true;
-//            player.body.velocity.y = -150;
-//            player.animations.play('up');
-//        }
-//    }
-//        };
-//    if(this.player.body.velocity.x<= game.world.width - 200 && ((game.world.height - 180) + (game.world.height - 600))){
-//            }
+        
        this.fireBalls.forEach(function(obj){
            if(obj.x < game.world.width - 680 && obj.y > game.world.height - 150){
                console.log('killed');
@@ -407,10 +372,3 @@ var GameState = {
 var game = new Phaser.Game(1000, 650, Phaser.AUTO);
 game.state.add('GameState', GameState);
 game.state.start('GameState');
-//To make somthing smaller:
-//  t3.scale.setTo(0.5);
-// this.sheep.anchor.setTo(0.5, 0.5);
-//To rotate in update we write:
-//this.sheep.angle += 0.5
-
-//openclipart.org , kenney.nl ,
