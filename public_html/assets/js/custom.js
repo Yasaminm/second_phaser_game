@@ -9,6 +9,7 @@ var GameState = {
         this.game.physics.arcade.gravity.y = 400;
         
         this.game.world.setBounds(0,0,1000,1500);
+        
     },
 
     preload: function () {
@@ -33,8 +34,6 @@ var GameState = {
         this.load.image('t3', 'assets/images/Tree_3.png');
         this.load.image('ground_small', 'assets/images/platform-small.png');
         this.load.image('stair', 'assets/images/tile_45.png');
-        this.load.image('star', 'assets/images/star.png');
-        this.load.image('diamond', 'assets/images/diamond.png');
         this.load.spritesheet('fire', 'assets/images/fire.gif', 36 ,61 ,9);
         this.load.spritesheet('monster', 'assets/images/monster.png', 139.6 ,145 ,8);
         this.load.spritesheet('fireBall', 'assets/images/fireBalls.png', 512 ,173 ,6);
@@ -43,10 +42,12 @@ var GameState = {
         this.load.spritesheet('player', 'assets/images/boy_walk.png', 95.16666666666667, 158.75, 48);
         this.load.image('rope', 'assets/images/rope.gif');
         this.load.spritesheet('baddie', 'assets/images/baddie.png', 32, 32);
-        this.load.audio('sfx', ['assets/soundsEffects/fx_mixdown.mp3', 'assets/soundsEffects/fx_mixdown.ogg']);
+        this.load.audio('synth2', 'assets/soundsEffects/synth2.mp3');
+//        this.load.audio('monsterDeath', ['assets/soundsEffects/magical_horror_audiosprite.mp3', 'assets/soundsEffects/magical_horror_audiosprite.ogg']);
 
     },
     create: function () {
+//        game.renderer.renderSession.roundPixels = true;
         this.background = this.game.add.sprite(0, 0, 'skyb');
         this.background = this.game.add.sprite(0, 750, 'bg');
         this.g10 = this.game.add.sprite(game.world.width - 375, game.world.height - 128, 'gr10');
@@ -73,6 +74,7 @@ var GameState = {
         this.b1c = this.game.add.sprite(500, game.world.height - 300, 'b1');
         this.b2c = this.game.add.sprite(550, game.world.height - 278, 'b2');
         this.rope = this.game.add.sprite(100, game.world.height - 970, 'rope');
+        this.synth2 = game.add.audio('synth2');
 
         this.t3a.scale.setTo(0.5);
         this.t2.scale.setTo(0.7);
@@ -81,8 +83,9 @@ var GameState = {
         this.b1c.scale.setTo(0.8);
         this.b2c.scale.setTo(0.5);
         this.rope.scale.setTo(1.1);
-//        this.rope.anchor.setTo(0.5);
-////////////////////////////////////////////////,
+        this.rope.anchor.setTo(0.98);
+        //        this.rope.anchor.setTo(0.5);
+        ////////////////////////////////////////////////,
           //  {'x': game.world.width - 200, 'y': game.world.height - 600}
         var groundData = [
             {'x': 0, 'y': game.world.height - 128},
@@ -96,7 +99,6 @@ var GameState = {
         }, this);
         this.grounds.setAll('body.immovable', true);
         this.grounds.setAll('body.allowGravity', false);
-
 
         var groundSideRData = [
             {'x': 128, 'y': game.world.height - 128},
@@ -182,8 +184,6 @@ var GameState = {
         }, this);
 //        this.fire.setAll('body.immovable', true);
         this.fires.setAll('body.allowGravity', false);
-        
-        
 
         var stairData = [
             {'x': game.world.width - 170, 'y': game.world.height - 180},
@@ -218,16 +218,11 @@ var GameState = {
          this.fireBalls.enableBody = true;
          this.createFireBall();
          this.barrelCreator = this.game.time.events.loop(Phaser.Timer.SECOND * this.fireBallFrquency, this.createFireBall, this);
-//        this.player = this.game.add.sprite(0, game.world.height - 222, 'dude');
-//        this.player.customParams = {Score: 30, Life: 100};
-//       dog1 = game.add.sprite(790, 250, 'baddie');
-//        this.game.physics.arcade.enable(player);
+        
+//       this.dog = game.add.sprite(790, this.game.world.height - 222, 'baddie');
 ////        game.physics.arcade.enable(dog1);
-//        this.player.body.gravity.y = 400;
 ////        dog1.body.gravity.y = 300;
-//        this.player.body.bounce.y = 0.2;
 ////        dog1.body.bounce.y = 0.1;
-//        this.player.body.collideWorldBounds = true;
 ////        dog1.body.collideWorldBounds = true;
         this.player = this.add.sprite(15, this.game.world.height - 222, 'player', 4);
         this.game.physics.arcade.enable(this.player);
@@ -237,7 +232,27 @@ var GameState = {
         this.player.animations.add('left', [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 12, true);
         this.player.animations.add('right', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 12, true);
         this.player.animations.add('up', [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 12, true);
+        this.player.body.collideWorldBounds = true;
+//        this.player.customParams = {
+//            lifeT: 100
+//        };
+        this.player.customParam = 100;
+        var style = {font: '20px Arial', fill: "#3333ff"};
+       this.life = this.game.add.text(100, 20, 'Life Time: ', style);
+       this.life.fixedToCamera = true;
+       this.lifeText = this.game.add.text(190, 20, ' ', style);
+       this.lifeText.fixedToCamera = true;
+       this.lifeState();
+
+        this.lifeDecreaser = this.game.time.events.loop(Phaser.Timer.SECOND * 5, this.reduceLifTime, this);
         this.game.camera.follow(this.player);
+        
+        //////////////////////////////////////////////////////////
+//       this.tweenA = game.add.tween(this.player).to( { x: this.player.body.velocity.x }, 2000, "Quart.easeOut");
+//        this.tweenB = game.add.tween(this.dog).to( { x: this.player.x }, 2000, "Quart.easeOut");
+//        this.tweenA.chain(this.tweenB);
+        ///////////////////////////////////////////////////////////
+
 //        this.player.play('right');
 //        this.player.scale.setTo(0.6);
 //        this.player.anchor.setTo(0.5, 0.5);
@@ -245,11 +260,19 @@ var GameState = {
 ////        dog1.animations.add('right', [2, 3], 10, true);
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.jumpBtn = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-        
-        
+
+//        this.synth2.play();
+        game.sound.setDecodedCallback(this.synth2, this.start, this);
+        ///////////////////////////////////////////////////////////////////////rope Swing
+//        var ropeSwing = this.game.add.tween(this.rope);
+//             ropeSwing.to({angle: '+30'}, 1000);
+//             ropeSwing.onComplete.add(function(){
+//             this.rope.angle -= 0.5;});
+//            ropeSwing.start();
     },
-//    var direction1 = -1;
+    
     update: function () {
+       
         game.physics.arcade.collide(this.player, this.grounds);
         game.physics.arcade.collide(this.player, this.groundSideR);
         game.physics.arcade.collide(this.player, this.groundSideL);
@@ -263,47 +286,55 @@ var GameState = {
         game.physics.arcade.collide(this.fireBalls, this.gr13);
         
         game.physics.arcade.overlap(this.player, this.stair, function (player, stair) {
-                    this.uiBlocked = false;
+                    this.keyOperation = false;
         }, null, this);
         game.physics.arcade.overlap(this.player, this.rope, function (player, rope) {
-                    this.uiBlocked = false;
+//                    this.keyOperation = false;
         }, null, this);
          game.physics.arcade.overlap(this.player, this.fires, this.killPlayer , null, this);
          game.physics.arcade.overlap(this.player, this.fireBalls, this.killPlayer , null, this);
          
         game.physics.arcade.overlap(this.player, this.monster, function (player, monster) {
+            this.monsterDeath = this.add.audio('monsterDeath');
+            this.monsterDeath.play('lazer_wall_off');
                    alert('Congratulations you win !!!');
                    game.state.start('GameState');
+                    this.synth2.stop();
         }, null, this);
-        
-        
-        
-//        if(game.world.height - 221 >= game.world.width - 872 && game.world.height - 221 <= game.world.width  - 400){
-//            this.rope.angle += 0.5;
-//        }else if(game.world.height - 221 <= game.world.width - 872 && game.world.height - 221 >= game.world.width  - 400){
-//            this.rope.angle -= 0.5;
-//        };
-//        
-        this.uiBlocked = false;
+//
+//         if(this.rope.x >= game.world.width - 872 && this.rope.x <= game.world.width  - 400){
+//              this.rope.angle += 0.5;
+//           }else if(game.world.height - 221 <= game.world.width - 872 && game.world.height - 221 >= game.world.width  - 400){
+//               this.rope.angle -= 0.5;
+//          };
+                if(this.rope.x <= 100) {
+                    this.rope.angle += 0.5;
+                } else if (this.rope.x >= Math.sin(this.rope.x) * 2) {
+                    this.rope.angle -= 0.5;
+                };
+
+        this.keyOperation = false;
         this.player.body.velocity.x = 0;
         if (this.cursors.left.isDown) {
             this.player.body.velocity.x = -150;
              this.player.play('left');
+//             this.tweenA.start();
+              
         } else if (this.cursors.right.isDown) {
             this.player.body.velocity.x = +150;
             this.player.play('right');
+//            this.tweenA.start();
 //            this.player.animations.play('right');
-        }else if (this.cursors.up.isDown && !this.uiBlocked) {
+        }else if (this.cursors.up.isDown && !this.keyOperation) {
             this.player.body.velocity.x = 0;
                 if(this.player.x > (game.world.width - 170)&& this.player.x < game.world.width - 103 ){
                 if(this.player.y >= game.world.height - 650){
                      this.player.body.velocity.y = -150;
-                this.player.play('up');
-//                this.uiBlocked = false;
+                     this.player.play('up');
+//                this.keyOperation = false;
                 };
             }
-        }else if (this.cursors.down.isDown && !this.uiBlocked) {
-            
+        }else if (this.cursors.down.isDown && !this.keyOperation) {
             this.player.body.velocity.x = 0;
                 if(this.player.x > (game.world.width - 170)&& this.player.x < game.world.width - 103){
                 this.player.body.velocity.y = +150;
@@ -311,7 +342,7 @@ var GameState = {
 //            } 
         }
 //                console.log(this.player.body.velocity.y);
-            this.uiBlocked = false;
+            this.keyOperation = false;
 //            }
             } else {
             this.player.animations.stop();
@@ -333,22 +364,44 @@ var GameState = {
 ////            }, this);
 ////            dogMovement.start();
 //        //////////////////////
-//       
 //    },
         this.isClaimbing = false;
         this.isComingDown = false;
         this.player.body.gravity.y = 0;
-        
+
+//            if(this.player.body.velocity.x<= game.world.width - 200 && ((game.world.height - 180) + (game.world.height - 600))){
+//            player.body.velocity.y = 0;
+//            console.log('up or down')
+//            if (!this.isClimbing && Math.abs(player.x - stair.x) < 10 && this.cursors.down.isDown) {
+//            this.isClimbing = true;
+//            player.body.velocity.y = +150;
+//            player.animations.play('bottom');
+//        }
+//        else if (!this.isComingDown && Math.abs(player.x - stair.x) < 10 && this.cursors.up.isDown) {
+//            this.isComingDown = true;
+//            player.body.velocity.y = -150;
+//            player.animations.play('up');
+//        }
+//    }
+//        };
+//    if(this.player.body.velocity.x<= game.world.width - 200 && ((game.world.height - 180) + (game.world.height - 600))){
+//            }
        this.fireBalls.forEach(function(obj){
            if(obj.x < game.world.width - 680 && obj.y > game.world.height - 150){
                console.log('killed');
                obj.kill();
            };
-       })
+       });
+       
+       if(this.player.customParam <= 0){
+           game.state.start('GameState');
+       };
     },
+    
     killPlayer: function(){
         console.log('Player killed');
         game.state.start('GameState');
+         this.synth2.stop();
     },
     createFireBall: function(){
         var fireBall = this.fireBalls.getFirstExists(false);
@@ -367,8 +420,41 @@ var GameState = {
         fireBall.body.velocity.x = -150;
         console.log(fireBall.x, fireBall.y);
     },
+    lifeState: function(){
+        this.lifeText.text = this.player.customParam;
+        
+    },
+    reduceLifTime: function(){
+        this.player.customParam -=10;
+        this.lifeState();
+        console.log(this.player.customParam);
+    },
+   start: function() {
+
+//    this.synth2.shift();
+    this.synth2.loopFull(0.6);
+//    this.synth2.onLoop.add(hasLooped, this);
+
+}
+    
 };
 //////////////650
 var game = new Phaser.Game(1000, 650, Phaser.AUTO);
 game.state.add('GameState', GameState);
 game.state.start('GameState');
+//To make somthing smaller:
+//  t3.scale.setTo(0.5);
+// this.rope.anchor.setTo(0.5, 0.5);
+//To rotate in update we write:
+//this.rope.angle += 0.5
+
+//openclipart.org , kenney.nl ,
+
+//https://phaser.io/examples/v2/tweens/chained-tweens
+//https://stackoverflow.com/questions/27533331/problems-making-enemy-follow-moving-player
+//https://gamemechanicexplorer.com/#follow-4
+//https://cfurrow.github.io/game%20development/2016/10/02/phaser-js-wave-example
+//https://www.codeandweb.com/physicseditor/tutorials/phaser-p2-physics-example-tutorial
+//https://phaser.io/examples/v2/search?search=chain
+//http://www.html5gamedevs.com/topic/2283-check-animation-frames-when-finished/
+//https://www.reddit.com/r/Unity3D/comments/6jh39c/rope_swinging/
